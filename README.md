@@ -22,18 +22,18 @@ This project is built with a modern tech stack, featuring a **React/Vite** front
 ---
 
 ## Screenshots
-# Login Page
+### Login Page
 ![Login Page](assets/login.png)
-# Registration Page
+### Registration Page
 ![Registration Page](assets/signup.png)
-# Video Panel
+### Video Panel
 ![Video Panel](assets/ide1.png)
-# Dashboard
+### Dashboard
 ![Dashboard](assets/dashboard.png)
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Area | Technology |
 | :--- | :--- |
