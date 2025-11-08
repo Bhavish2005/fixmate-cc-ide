@@ -8,26 +8,27 @@ This project is built with a modern tech stack, featuring a **React/Vite** front
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-* **🚀 Real-time Collaborative Editing:** Powered by **Socket.io**, multiple users can edit the same file simultaneously, with changes reflected instantly.
-* **🎥 Integrated Video & Chat:** High-quality video and text chat panels using **Stream**, allowing for face-to-face communication right inside the editor.
-* **🤖 AI-Powered Debug-Buddy:** Stuck on a bug? An integrated **Google Gemini** assistant can explain errors, suggest fixes, or refactor code.
-* **⚡️ Instant Code Execution:** Run your code instantly using the **Piston API** for various languages, with output displayed directly in the editor.
-* **🔐 Secure Authentication:** Full user auth system with **JWT**, `httpOnly` cookies, Google OAuth 2.0 (via Firebase), and secure password reset functionality (via Nodemailer).
-* **📊 Personal Dashboard:** A protected route for logged-in users to view their coding activity, success/error rates, and most common mistakes, visualized with charts.
-* **⌨️ Vim Mode:** Optional Vim keybindings within the Monaco editor for power users.
+* **Real-time Collaborative Editing:** Powered by **Socket.io**, multiple users can edit the same file simultaneously, with changes reflected instantly.
+* **Integrated Video & Chat:** High-quality video and text chat panels using **Stream**, allowing for face-to-face communication right inside the editor.
+* **AI-Powered Debug-Buddy:** Stuck on a bug? An integrated **Google Gemini** assistant can explain errors, suggest fixes, or refactor code.
+* **Instant Code Execution:** Run your code instantly using the **Piston API** for various languages, with output displayed directly in the editor.
+* **Secure Authentication:** Full user auth system with **JWT**, `httpOnly` cookies, Google OAuth 2.0 (via Firebase), and secure password reset functionality (via Nodemailer).
+* **Personal Dashboard:** A protected route for logged-in users to view their coding activity, success/error rates, and most common mistakes, visualized with charts.
+* **Vim Mode:** Optional Vim keybindings within the Monaco editor for power users.
 * **Modern UI:** A sleek, responsive, and dark-mode-first UI built with **TailwindCSS** and **Framer Motion**.
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
 | Login Page | Registration Page | Video Panel |
 | :---: | :---: | :---: |
-| ![Login Page](assets/login.png) | ![Registration Page](assets/signup.png) | ![Video Panel](assets/ide1.png) | ![Dashboard](assets/dashboard.png) |
-
-*(Add more screenshots of the main editor, dashboard, etc. here)*
+| ![Login Page](assets/login.png) | ![Registration Page](assets/signup.png) | ![Video Panel](assets/ide1.png) | 
+| Dashboard |
+| :---: |
+|![Dashboard](assets/dashboard.png) |
 
 ---
 
@@ -42,7 +43,7 @@ This project is built with a modern tech stack, featuring a **React/Vite** front
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 To get a local copy up and running, follow these simple steps.
 
@@ -98,10 +99,6 @@ First, set up the server which handles WebSockets, API requests, and AI integrat
     
     # Frontend URL (for CORS and password reset links)
     FRONTEND_URL=http://localhost:5173
-    
-    # JDOODLE API (Used by a backend route, though frontend uses Piston)
-    JDOODLE_CLIENT_ID=your_jdoodle_client_id
-    JDOODLE_CLIENT_SECRET=your_jdoodle_client_secret
     ```
 
 4.  **Add Firebase Credentials:**
@@ -153,6 +150,6 @@ Open `http://localhost:5173` in your browser. You can now register an account, c
 
 ---
 
-## 📄 License
+## License
 
-Distributed under the ISC License. See the `package.json` files for more information.
+Distributed under the GNU GPL License 3.0. See the `package.json` files for more information.
