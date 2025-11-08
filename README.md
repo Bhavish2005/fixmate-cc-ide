@@ -31,7 +31,7 @@ This project is built with a modern tech stack, featuring a **React/Vite** front
 ### Dashboard
 ![Dashboard](assets/dashboard.png)
 ### AI-Powered Error Resolver IDE
-![Coding IDE](assests/Codeing_IDE.png)
+![Coding IDE](assets/Codeing_IDE.png)
 
 ---
 
