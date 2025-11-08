@@ -22,11 +22,14 @@ This project is built with a modern tech stack, featuring a **React/Vite** front
 ---
 
 ## Screenshots
-
-| ![Login Page](assets/login.png) | 
-| ![Registration Page](assets/signup.png) | 
-| ![Video Panel](assets/ide1.png) | 
-| ![Dashboard](assets/dashboard.png) |
+# Login Page
+![Login Page](assets/login.png)
+# Registration Page
+![Registration Page](assets/signup.png)
+# Video Panel
+![Video Panel](assets/ide1.png)
+# Dashboard
+![Dashboard](assets/dashboard.png)
 
 ---
 
