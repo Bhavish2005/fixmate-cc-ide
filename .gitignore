@@ -1,0 +1,10 @@
+codeeditor-backend/node_modules
+codeeditor-backend/.env
+codeeditor-backend/build
+codeeditor-backend/.vscode
+codeeditor-backend/firebase-credentials.json
+CollabrativeCodeEditor/node_modules
+CollabrativeCodeEditor/.env
+CollabrativeCodeEditor/build
+CollabrativeCodeEditor/.vscode
+CollabrativeCodeEditor/FireBaseConfig/config.js
