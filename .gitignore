@@ -8,3 +8,4 @@ CollabrativeCodeEditor/.env
 CollabrativeCodeEditor/build
 CollabrativeCodeEditor/.vscode
 CollabrativeCodeEditor/FireBaseConfig/config.js
+node_modules
