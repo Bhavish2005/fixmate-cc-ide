@@ -25,7 +25,7 @@ This project is built with a modern tech stack, featuring a **React/Vite** front
 
 | Login Page | Registration Page | Video Panel |
 | :---: | :---: | :---: |
-| ![Login Page](new/CollabrativeCodeEditor/src/assets/Image2.png) | ![Registration Page](new/CollabrativeCodeEditor/src/assets/Image3.png) | ![Video Panel](new/CollabrativeCodeEditor/src/assets/Image.png) |
+| ![Login Page](assets/login.png) | ![Registration Page](assets/signup.png) | ![Video Panel](assets/ide1.png) | ![Dashboard](assets/dashboard.png) |
 
 *(Add more screenshots of the main editor, dashboard, etc. here)*
 
