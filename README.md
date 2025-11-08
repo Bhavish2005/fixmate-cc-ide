@@ -30,6 +30,8 @@ This project is built with a modern tech stack, featuring a **React/Vite** front
 ![Video Panel](assets/ide1.png)
 ### Dashboard
 ![Dashboard](assets/dashboard.png)
+### AI-Powered Error Resolver IDE
+![Coding IDE](assests/Codeing_IDE.png)
 
 ---
 
