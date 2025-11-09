@@ -1,7 +1,4 @@
 # FixMate - Collaborative Code Editor
-
-![FixMate Demo](https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3pjYXFveGVqdTk2dmxwYWFpcmVzMWc3MzFzN2FtZXc1b3ZhZmk4NiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/Jqy5D7DFs0i5EPkWfV/giphy.gif)
-
 **FixMate** is a real-time, feature-rich collaborative code editor designed for pair programming, technical interviews, and remote learning. It provides a seamless environment where developers can code together, communicate via video chat, and even get help from an integrated AI assistant.
 
 This project is built with a modern tech stack, featuring a **React/Vite** frontend and a **Node.js/Express** backend, all tied together with **WebSockets**, **Stream**, and the **Google Gemini API**.
