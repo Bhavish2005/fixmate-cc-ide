@@ -1,264 +1,27 @@
-// import React, { useImperativeHandle, forwardRef, useState, useCallback } from 'react'
-
-// /**
-//  * Flexible AISidebar
-//  * Props:
-//  * - initialCollapsed: boolean (start collapsed)
-//  * - compact: boolean (compact UI for narrow sidebars)
-//  * - maxHistory: number (max items to keep)
-//  * - aiHandler: async function(text) => { answer: string } (optional override for actual AI calls)
-//  * - placeholder: string (prompt placeholder)
-//  * - className: string additional classes for root container
-//  *
-//  * Exposed via ref:
-//  * - explainError(err)
-//  * - ask(text)
-//  * - clearHistory()
-//  */
-
-// const AISidebar = forwardRef(function AISidebar(
-//   {
-//     initialCollapsed = false,
-//     compact = false,
-//     maxHistory = 50,
-//     aiHandler = null,
-//     placeholder = 'Ask the AI about errors, suggestions, or ask to simplify code...',
-//     className = '',
-//   },
-//   ref
-// ) {
-//   const [prompt, setPrompt] = useState('')
-//   const [loading, setLoading] = useState(false)
-//   const [response, setResponse] = useState(null)
-//   const [history, setHistory] = useState([])
-//   const [collapsed, setCollapsed] = useState(Boolean(initialCollapsed))
-
-//   const clampHistory = useCallback((items) => items.slice(0, Math.max(0, Math.min(500, maxHistory))), [maxHistory])
-
-//   // Small heuristic-based explainer for JS errors. Expandable later to call real AI.
-//   function explainErrorSync(err) {
-//     if (!err) return 'No error provided to explain.'
-//     const lower = String(err).toLowerCase()
-
-//     if (lower.includes('referenceerror')) {
-//       return (
-//         "ReferenceError usually means a variable or function is being used before it's defined or it's out of scope. " +
-//         "Check spelling, ensure the variable is declared (const/let/var) and that it's in the correct lexical scope. For DOM refs ensure element exists before access."
-//       )
-//     }
-
-//     if (lower.includes('typeerror')) {
-//       return (
-//         "TypeError means an operation was performed on a value of the wrong type (e.g., calling a non-function, or accessing property of undefined). " +
-//         "Inspect the value, add guards (if/?.) and log runtime types to find the root."
-//       )
-//     }
-
-//     if (lower.includes('syntaxerror')) {
-//       return (
-//         "SyntaxError indicates invalid code - missing brace, unexpected token, or malformed expression. " +
-//         "Run a linter or check the line number in the stack to find the exact spot."
-//       )
-//     }
-
-//     if (lower.includes('cannot read property') || lower.includes("cannot read properties of undefined")) {
-//       return (
-//         "This error typically indicates you're trying to access a property on undefined or null. Use optional chaining (?.), or ensure the value is initialized before access."
-//       )
-//     }
-
-//     if (lower.includes('timeout') || lower.includes('network')) {
-//       return (
-//         "Looks like a network or timeout issue. Verify network connectivity, retry policies, and backend availability. Also check CORS if calling APIs from the browser."
-//       )
-//     }
-
-//     // fallback
-//     return (
-//       "I couldn't match this error to a common pattern. Try providing more context (code snippet or stack trace) or press 'Ask AI' to get a detailed explanation."
-//     )
-//   }
-
-//   async function localAIHandler(text) {
-//     // small simulated delay
-//     await new Promise((res) => setTimeout(res, 250))
-//     return { answer: explainErrorSync(text) }
-//   }
-
-//   // askAI will delegate to provided aiHandler or use the local mock
-//   async function askAI(text) {
-//     if (!text) return null
-//     setLoading(true)
-//     try {
-//       const handler = typeof aiHandler === 'function' ? aiHandler : localAIHandler
-//       const result = await handler(text)
-//       const answer = (result && result.answer) || String(result || '')
-//       const item = {
-//         id: Date.now(),
-//         question: text,
-//         answer,
-//         createdAt: new Date().toISOString(),
-//       }
-//       setHistory((h) => clampHistory([item, ...h]))
-//       setResponse(answer)
-//       return item
-//     } finally {
-//       setLoading(false)
-//     }
-//   }
-
-//   // Expose methods to parent via ref
-//   useImperativeHandle(ref, () => ({
-//     explainError: (err) => {
-//       const explanation = explainErrorSync(err)
-//       const item = {
-//         id: Date.now(),
-//         question: err || 'Explain: (no input)',
-//         answer: explanation,
-//         createdAt: new Date().toISOString(),
-//       }
-//       setResponse(item.answer)
-//       setHistory((h) => clampHistory([item, ...h]))
-//       return item
-//     },
-//     ask: async (text) => {
-//       return await askAI(text)
-//     },
-//     clearHistory: () => {
-//       setHistory([])
-//     },
-//     setResponse: (text) => {
-//       setResponse(text)
-//     }
-//   }), [aiHandler, clampHistory])
-
-//   function handleAskClick() {
-//     askAI(prompt)
-//   }
-
-//   function toggleCollapsed() {
-//     setCollapsed((c) => !c)
-//   }
-
-//   // UI classes adapt to compact mode
-//   const rootClasses = `flex flex-col h-full ${compact ? 'text-sm p-2' : 'p-4'} ${className}`
-
-//   return (
-//     <div className={rootClasses}>
-//       <div className="flex items-center justify-between mb-3">
-//         <h3 className={`font-semibold ${compact ? 'text-xs' : 'text-sm'}`}>{collapsed ? 'AI' : 'AI Assistant'}</h3>
-//         <div className="flex items-center gap-2">
-//           <button
-//             onClick={toggleCollapsed}
-//             aria-expanded={!collapsed}
-//             title={collapsed ? 'Expand' : 'Collapse'}
-//             className="text-xs text-slate-400 hover:text-white"
-//           >
-//             {collapsed ? '›' : '‹'}
-//           </button>
-//         </div>
-//       </div>
-
-//       {collapsed ? (
-//         <div className="flex-1 flex items-center justify-center text-slate-400">Collapsed</div>
-//       ) : (
-//         <div className="flex-1 overflow-auto">
-//           <div className="mb-3">
-//             <label className="text-xs text-slate-300">Prompt</label>
-//             <textarea
-//               value={prompt}
-//               onChange={(e) => setPrompt(e.target.value)}
-//               placeholder={placeholder}
-//               className={`w-full mt-1 p-2 rounded bg-slate-700 text-white border border-slate-600 min-h-[${compact ? '48' : '72'}px] resize-none text-sm`}
-//             />
-//             <div className="mt-2 flex items-center gap-2">
-//               <button
-//                 onClick={handleAskClick}
-//                 disabled={loading || !prompt}
-//                 className={`px-2 py-1 text-xs rounded ${loading || !prompt ? 'bg-slate-600 text-slate-300 cursor-not-allowed' : 'bg-amber-600 hover:bg-amber-500 text-white'}`}
-//               >
-//                 {loading ? 'Thinking…' : 'Ask AI'}
-//               </button>
-//               <button
-//                 onClick={() => { setPrompt(''); setResponse(null) }}
-//                 className="px-2 py-1 text-xs rounded bg-slate-700 hover:bg-slate-600 text-slate-200"
-//               >
-//                 Clear
-//               </button>
-//             </div>
-//           </div>
-
-//           <div className="mb-3">
-//             <div className="text-xs text-slate-300 mb-2">Response</div>
-//             <div className="min-h-[80px] p-3 bg-slate-800 rounded border border-slate-700 text-sm text-slate-200">
-//               {response ? (
-//                 <div>
-//                   <div className="whitespace-pre-wrap">{response}</div>
-//                 </div>
-//               ) : (
-//                 <div className="text-slate-400">No response yet. Ask a question or use the "Explain the Error" action from the editor.</div>
-//               )}
-//             </div>
-//           </div>
-
-//           <div>
-//             <div className="flex items-center justify-between mb-2">
-//               <div className="text-xs text-slate-300">History</div>
-//               <div className="flex items-center gap-2">
-//                 <button onClick={() => setHistory([])} className="text-xs text-slate-400 hover:text-white">Clear</button>
-//                 <div className="text-xs text-slate-400">{history.length}</div>
-//               </div>
-//             </div>
-
-//             <div className="space-y-2">
-//               {history.length === 0 ? (
-//                 <div className="text-xs text-slate-500">No previous queries.</div>
-//               ) : (
-//                 history.map((h) => (
-//                   <div key={h.id} className="p-2 bg-slate-800 border border-slate-700 rounded">
-//                     <div className="text-xs text-slate-300 font-medium">{h.question}</div>
-//                     <div className="text-xs text-slate-400 mt-1 whitespace-pre-wrap">{h.answer}</div>
-//                   </div>
-//                 ))
-//               )}
-//             </div>
-//           </div>
-//         </div>
-//       )}
-
-//       <div className="mt-3 text-xs text-slate-400">AI Sidebar — flexible mock helper. Provide `aiHandler` prop to connect a real AI backend.</div>
-//     </div>
-//   )
-// })
-
-// export default AISidebar
-
-
 // import React, {
 //   useImperativeHandle,
 //   forwardRef,
 //   useState,
 //   useCallback,
+//   useEffect,
+//   useRef,
 // } from "react";
-// import { motion, AnimatePresence } from "framer-motion";
 // import {
-//   ChevronLeft,
-//   ChevronRight,
 //   Send,
-//   Trash2,
 //   Loader2,
 //   MessageSquare,
 //   Bot,
+//   X,
+//   Sparkles,
 // } from "lucide-react";
 
 // const AISidebar = forwardRef(function AISidebar(
 //   {
-//     initialCollapsed = false,
-//     compact = false,
 //     maxHistory = 50,
 //     aiHandler = null,
-//     placeholder = "Ask the AI about errors, suggestions, or ask to simplify code...",
+//     placeholder = "Ask about errors or logic...",
 //     className = "",
+//     onClose,
 //   },
 //   ref
 // ) {
@@ -266,226 +29,131 @@
 //   const [loading, setLoading] = useState(false);
 //   const [response, setResponse] = useState(null);
 //   const [history, setHistory] = useState([]);
-//   const [collapsed, setCollapsed] = useState(Boolean(initialCollapsed));
+//   const responseEndRef = useRef(null);
 
 //   const clampHistory = useCallback(
 //     (items) => items.slice(0, Math.max(0, Math.min(500, maxHistory))),
 //     [maxHistory]
 //   );
 
-//   function explainErrorSync(err) {
-//     if (!err) return "No error provided to explain.";
-//     const lower = String(err).toLowerCase();
-
-//     if (lower.includes("referenceerror"))
-//       return "ReferenceError means you're using a variable or function before defining it. Check for typos or missing declarations.";
-//     if (lower.includes("typeerror"))
-//       return "TypeError means an operation was performed on an unexpected type (like calling a non-function or accessing a property of undefined).";
-//     if (lower.includes("syntaxerror"))
-//       return "SyntaxError means your code structure is invalid (missing brace, unexpected token, etc.).";
-//     if (
-//       lower.includes("cannot read property") ||
-//       lower.includes("cannot read properties of undefined")
-//     )
-//       return "You're trying to access a property on undefined or null. Use optional chaining (?.) or ensure it's initialized.";
-//     if (lower.includes("timeout") || lower.includes("network"))
-//       return "Network or timeout issue — check your connection or API availability.";
-
-//     return "Couldn’t detect a known error pattern. Try asking the AI for deeper insight.";
-//   }
-
-//   async function localAIHandler(text) {
-//     await new Promise((res) => setTimeout(res, 300));
-//     return { answer: explainErrorSync(text) };
-//   }
-
 //   async function askAI(text) {
 //     if (!text) return null;
 //     setLoading(true);
 //     try {
-//       const handler = typeof aiHandler === "function" ? aiHandler : localAIHandler;
+//       const handler = typeof aiHandler === "function" ? aiHandler : async () => ({ answer: "AI Disconnected" });
 //       const result = await handler(text);
-//       const answer = (result && result.answer) || String(result || "");
-//       const item = {
-//         id: Date.now(),
-//         question: text,
-//         answer,
-//         createdAt: new Date().toISOString(),
-//       };
-//       setHistory((h) => clampHistory([item, ...h]));
+//       const answer = result?.answer || "";
+//       const item = { id: Date.now(), question: text, answer };
 //       setResponse(answer);
+//       setHistory((h) => clampHistory([item, ...h]));
 //       return item;
 //     } finally {
 //       setLoading(false);
 //     }
 //   }
 
-//   useImperativeHandle(
-//     ref,
-//     () => ({
-//       explainError: (err) => {
-//         const explanation = explainErrorSync(err);
-//         const item = {
-//           id: Date.now(),
-//           question: err || "Explain: (no input)",
-//           answer: explanation,
-//           createdAt: new Date().toISOString(),
-//         };
-//         setResponse(item.answer);
-//         setHistory((h) => clampHistory([item, ...h]));
-//         return item;
-//       },
-//       ask: async (text) => await askAI(text),
-//       clearHistory: () => setHistory([]),
-//       setResponse: (text) => setResponse(text),
-//     }),
-//     [aiHandler, clampHistory]
-//   );
+//   useEffect(() => {
+//     responseEndRef.current?.scrollIntoView({ behavior: "smooth" });
+//   }, [response]);
 
-//   const toggleCollapsed = () => setCollapsed((c) => !c);
+//   useImperativeHandle(ref, () => ({
+//     explainError: (err) => {
+//       const ans = "Here is an explanation based on the error..."; // Placeholder
+//       const item = { id: Date.now(), question: "Fix Error", answer: ans };
+//       setResponse(ans);
+//       setHistory((h) => clampHistory([item, ...h]));
+//     },
+//     ask: askAI,
+//     clearHistory: () => { setHistory([]); setResponse(null); },
+//   }));
 
 //   return (
-//     <div
-//       className={`flex flex-col h-full bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/60 shadow-lg rounded-xl transition-all duration-300 ${className}`}
-//     >
-//       {/* Header */}
-//       <div className="flex items-center justify-between px-3 py-2 border-b border-slate-700/50">
-//         <div className="flex items-center gap-2">
-//           <Bot className="w-4 h-4 text-amber-500" />
-//           <h3
-//             className={`font-semibold ${
-//               compact ? "text-xs" : "text-sm"
-//             } text-white`}
-//           >
-//             {collapsed ? "AI" : "AI Assistant"}
-//           </h3>
+//     <div className={`flex flex-col h-full bg-slate-900 ${className}`}>
+      
+//       {/* 1. HEADER (Fixed Top) */}
+//       <div className="flex-none flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-slate-900 z-10">
+//         <div className="flex items-center gap-3">
+//           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+//             <Bot size={18} className="text-white" />
+//           </div>
+//           <div>
+//             <h3 className="font-bold text-sm text-white">Debug Buddy</h3>
+//             <p className="text-[10px] text-emerald-400 font-medium">● Online</p>
+//           </div>
 //         </div>
-
-//         <button
-//           onClick={toggleCollapsed}
-//           className="p-1 rounded hover:bg-slate-700/50 transition"
-//           title={collapsed ? "Expand" : "Collapse"}
-//         >
-//           {collapsed ? (
-//             <ChevronLeft className="w-4 h-4 text-slate-300" />
-//           ) : (
-//             <ChevronRight className="w-4 h-4 text-slate-300" />
-//           )}
-//         </button>
+//         {onClose && (
+//           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
+//             <X size={18} />
+//           </button>
+//         )}
 //       </div>
 
-//       {/* Collapsing Body */}
-//       <AnimatePresence initial={false}>
-//         {!collapsed && (
-//           <motion.div
-//             key="expanded"
-//             initial={{ opacity: 0, height: 0 }}
-//             animate={{ opacity: 1, height: "100%" }}
-//             exit={{ opacity: 0, height: 0 }}
-//             transition={{ duration: 0.25, ease: "easeInOut" }}
-//             className="flex-1 overflow-y-auto p-3"
-//           >
-//             {/* Prompt */}
-//             <div className="mb-3">
-//               <textarea
+//       {/* 2. SCROLLABLE CONTENT (Middle) */}
+//       <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar min-h-0">
+//         {/* Response */}
+//         <div className="space-y-2">
+//             {response && (
+//                <div className="flex justify-between items-center">
+//                    <h4 className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-1">
+//                        <Sparkles size={10} /> AI Analysis
+//                    </h4>
+//                    <button onClick={()=>setResponse(null)} className="text-[10px] text-slate-500 hover:underline">Clear</button>
+//                </div>
+//             )}
+            
+//             <div className={`min-h-[120px] rounded-2xl border transition-all ${response ? "bg-slate-800/50 border-slate-700 p-4 shadow-inner" : "border-slate-800 border-dashed flex items-center justify-center"}`}>
+//                 {loading ? (
+//                     <div className="flex flex-col items-center gap-2 text-slate-500">
+//                         <Loader2 size={20} className="animate-spin text-cyan-500" />
+//                         <span className="text-xs">Thinking...</span>
+//                     </div>
+//                 ) : response ? (
+//                     <div className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">{response} <div ref={responseEndRef}/></div>
+//                 ) : (
+//                     <div className="text-center px-6">
+//                         <p className="text-xs text-slate-600">Ready to assist! Ask me anything.</p>
+//                     </div>
+//                 )}
+//             </div>
+//         </div>
+
+//         {/* History */}
+//         {history.length > 0 && (
+//             <div className="space-y-3 pt-4 border-t border-slate-800">
+//                 <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+//                     <MessageSquare size={10} /> Recent
+//                 </h4>
+//                 <div className="space-y-2">
+//                     {history.map((item) => (
+//                         <div key={item.id} onClick={() => setResponse(item.answer)} className="cursor-pointer group p-3 rounded-xl bg-slate-800/30 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 transition-all">
+//                             <p className="text-xs font-semibold text-slate-300 mb-1 line-clamp-1">{item.question}</p>
+//                             <p className="text-[10px] text-slate-500 line-clamp-2 group-hover:text-slate-400">{item.answer}</p>
+//                         </div>
+//                     ))}
+//                 </div>
+//             </div>
+//         )}
+//       </div>
+
+//       {/* 3. INPUT AREA (Fixed Bottom - Guaranteed Visible) */}
+//       <div className="flex-none p-4 border-t border-slate-800 bg-slate-900 z-10">
+//         <div className="relative bg-slate-800 rounded-2xl p-1 border border-slate-700 focus-within:border-cyan-500/50 focus-within:ring-1 focus-within:ring-cyan-500/20 transition-all">
+//             <textarea
 //                 value={prompt}
 //                 onChange={(e) => setPrompt(e.target.value)}
+//                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), askAI(prompt), setPrompt(""))}
 //                 placeholder={placeholder}
-//                 className="w-full p-2 rounded-lg bg-slate-800 border border-slate-700 focus:ring-1 focus:ring-amber-500 text-sm text-white resize-none min-h-[70px] placeholder-slate-500"
-//               />
-//               <div className="mt-2 flex items-center gap-2">
-//                 <button
-//                   onClick={() => askAI(prompt)}
-//                   disabled={loading || !prompt}
-//                   className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-//                     loading || !prompt
-//                       ? "bg-slate-700 text-slate-400 cursor-not-allowed"
-//                       : "bg-amber-600 hover:bg-amber-500 text-white shadow-md"
-//                   }`}
-//                 >
-//                   {loading ? (
-//                     <>
-//                       <Loader2 className="w-3.5 h-3.5 animate-spin" /> Thinking…
-//                     </>
-//                   ) : (
-//                     <>
-//                       <Send className="w-3.5 h-3.5" /> Ask AI
-//                     </>
-//                   )}
-//                 </button>
-
-//                 <button
-//                   onClick={() => {
-//                     setPrompt("");
-//                     setResponse(null);
-//                   }}
-//                   className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md bg-slate-700 hover:bg-slate-600 text-slate-200"
-//                 >
-//                   <Trash2 className="w-3.5 h-3.5" /> Clear
-//                 </button>
-//               </div>
-//             </div>
-
-//             {/* Response */}
-//             <div className="mb-4">
-//               <div className="text-xs text-slate-400 mb-2">Response</div>
-//               <div className="min-h-[90px] p-3 bg-slate-800/70 rounded-lg border border-slate-700 text-sm text-slate-200 shadow-inner">
-//                 {response ? (
-//                   <div className="whitespace-pre-wrap">{response}</div>
-//                 ) : (
-//                   <div className="text-slate-500 italic">
-//                     No response yet. Try asking something.
-//                   </div>
-//                 )}
-//               </div>
-//             </div>
-
-//             {/* History */}
-//             <div>
-//               <div className="flex items-center justify-between mb-2">
-//                 <div className="flex items-center gap-1 text-xs text-slate-400">
-//                   <MessageSquare className="w-3 h-3" />
-//                   <span>History</span>
-//                 </div>
-//                 <button
-//                   onClick={() => setHistory([])}
-//                   className="text-xs text-slate-400 hover:text-white"
-//                 >
-//                   Clear
-//                 </button>
-//               </div>
-
-//               <div className="space-y-2 max-h-[200px] overflow-y-auto">
-//                 {history.length === 0 ? (
-//                   <div className="text-xs text-slate-500 italic">
-//                     No previous queries.
-//                   </div>
-//                 ) : (
-//                   history.map((h) => (
-//                     <motion.div
-//                       key={h.id}
-//                       initial={{ opacity: 0, y: 5 }}
-//                       animate={{ opacity: 1, y: 0 }}
-//                       className="p-2 bg-slate-800/80 border border-slate-700 rounded-lg text-xs"
-//                     >
-//                       <div className="font-medium text-slate-300">
-//                         {h.question}
-//                       </div>
-//                       <div className="text-slate-400 mt-1 whitespace-pre-wrap">
-//                         {h.answer}
-//                       </div>
-//                     </motion.div>
-//                   ))
-//                 )}
-//               </div>
-//             </div>
-//           </motion.div>
-//         )}
-//       </AnimatePresence>
-
-//       {/* Footer */}
-//       <div className="text-[10px] text-slate-500 border-t border-slate-700/50 px-3 py-2">
-//         ⚙️ Flexible AI Sidebar — connect a real backend using `aiHandler`.
+//                 className="w-full bg-transparent text-sm text-white p-3 pr-10 max-h-32 min-h-[44px] resize-none outline-none placeholder-slate-600 custom-scrollbar"
+//                 rows={1}
+//             />
+//             <button 
+//                 onClick={() => { askAI(prompt); setPrompt(""); }}
+//                 disabled={!prompt.trim() || loading}
+//                 className="absolute right-2 bottom-2 p-1.5 bg-cyan-500 text-white rounded-lg hover:bg-cyan-400 disabled:opacity-0 disabled:pointer-events-none transition-all shadow-lg shadow-cyan-500/20"
+//             >
+//                 <Send size={14} />
+//             </button>
+//         </div>
 //       </div>
 //     </div>
 //   );
@@ -493,28 +161,32 @@
 
 // export default AISidebar;
 
-
 import React, {
   useImperativeHandle,
   forwardRef,
   useState,
   useCallback,
+  useEffect,
+  useRef,
 } from "react";
 import {
   Send,
-  Trash2,
   Loader2,
   MessageSquare,
   Bot,
+  X,
+  Sparkles,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const AISidebar = forwardRef(function AISidebar(
   {
-    compact = false,
     maxHistory = 50,
     aiHandler = null,
-    placeholder = "Ask the AI about errors, suggestions, or ask to simplify code...",
+    placeholder = "Ask about errors or logic...",
     className = "",
+    onClose,
   },
   ref
 ) {
@@ -522,217 +194,239 @@ const AISidebar = forwardRef(function AISidebar(
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
   const [history, setHistory] = useState([]);
+  const responseEndRef = useRef(null);
 
   const clampHistory = useCallback(
     (items) => items.slice(0, Math.max(0, Math.min(500, maxHistory))),
     [maxHistory]
   );
 
-  function explainErrorSync(err) {
-    if (!err) return "No error provided to explain.";
-    const lower = String(err).toLowerCase();
-
-    if (lower.includes("referenceerror"))
-      return "ReferenceError: using a variable or function before defining it.";
-    if (lower.includes("typeerror"))
-      return "TypeError: performing an invalid operation on a value of the wrong type.";
-    if (lower.includes("syntaxerror"))
-      return "SyntaxError: invalid JavaScript syntax (missing bracket, unexpected token, etc.).";
-    if (
-      lower.includes("cannot read property") ||
-      lower.includes("cannot read properties of undefined")
-    )
-      return "You're trying to access a property on undefined or null. Use optional chaining (?.).";
-    if (lower.includes("timeout") || lower.includes("network"))
-      return "Network or timeout issue — check your connection.";
-
-    return "Couldn’t detect a known error pattern. Try asking the AI directly.";
-  }
-
-  async function localAIHandler(text) {
-    await new Promise((res) => setTimeout(res, 300));
-    return { answer: explainErrorSync(text) };
-  }
-
   async function askAI(text) {
     if (!text) return null;
     setLoading(true);
     try {
       const handler =
-        typeof aiHandler === "function" ? aiHandler : localAIHandler;
+        typeof aiHandler === "function"
+          ? aiHandler
+          : async () => ({ answer: "AI Disconnected" });
       const result = await handler(text);
-      const answer = (result && result.answer) || String(result || "");
-      const item = {
-        id: Date.now(),
-        question: text,
-        answer,
-        createdAt: new Date().toISOString(),
-      };
-      setHistory((h) => clampHistory([item, ...h]));
+      const answer = result?.answer || "";
+      const item = { id: Date.now(), question: text, answer };
       setResponse(answer);
+      setHistory((h) => clampHistory([item, ...h]));
       return item;
     } finally {
       setLoading(false);
     }
   }
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      explainError: (err) => {
-        const explanation = explainErrorSync(err);
-        const item = {
-          id: Date.now(),
-          question: err || "Explain: (no input)",
-          answer: explanation,
-          createdAt: new Date().toISOString(),
-        };
-        setResponse(item.answer);
-        setHistory((h) => clampHistory([item, ...h]));
-        return item;
-      },
-      ask: async (text) => await askAI(text),
-      clearHistory: () => setHistory([]),
-      setResponse: (text) => setResponse(text),
-    }),
-    [aiHandler, clampHistory]
-  );
+  // Scroll to bottom of response when it updates
+  useEffect(() => {
+    responseEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [response]);
+
+  useImperativeHandle(ref, () => ({
+    explainError: (err) => {
+      const ans = `Here is an analysis of the error:\n\n\`\`\`\n${err}\n\`\`\`\n\nTry checking your syntax or variable definitions.`;
+      const item = { id: Date.now(), question: "Fix Error", answer: ans };
+      setResponse(ans);
+      setHistory((h) => clampHistory([item, ...h]));
+    },
+    ask: askAI,
+    clearHistory: () => {
+      setHistory([]);
+      setResponse(null);
+    },
+  }));
 
   return (
-    <div
-      className={`flex flex-col h-full bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/60 shadow-lg rounded-xl transition-all duration-300 ${className}`}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-slate-700/50">
-        <div className="flex items-center gap-2">
-          <Bot className="w-4 h-4 text-cyan-300" />
-          <h3
-            className={`font-semibold ${
-              compact ? "text-xs" : "text-sm"
-            } text-white`}
-          >
-            Debug-Buddy
-          </h3>
+    <div className={`flex flex-col h-full bg-slate-900 ${className}`}>
+      {/* 1. HEADER (Fixed Top) */}
+      <div className="flex-none flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-slate-900 z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+            <Bot size={18} className="text-white" />
+          </div>
+          <div>
+            <h3 className="font-bold text-sm text-white">Debug Buddy</h3>
+            <p className="text-[10px] text-emerald-400 font-medium">
+              ● Online
+            </p>
+          </div>
         </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="text-slate-500 hover:text-white transition-colors"
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
 
-      {/* Main Body */}
-      <div className="flex-1 overflow-y-auto p-3">
-        {/* Prompt */}
-        <div className="mb-3">
+      {/* 2. SCROLLABLE CONTENT (Middle) */}
+      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar min-h-0">
+        {/* Response Area */}
+        <div className="space-y-4">
+          {response && (
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-1">
+                <Sparkles size={10} /> AI Analysis
+              </h4>
+              <button
+                onClick={() => setResponse(null)}
+                className="text-[10px] text-slate-500 hover:underline"
+              >
+                Clear
+              </button>
+            </div>
+          )}
+
+          <div
+            className={`min-h-[120px] rounded-2xl border transition-all ${
+              response
+                ? "bg-slate-800/50 border-slate-700 p-5 shadow-inner"
+                : "border-slate-800 border-dashed flex items-center justify-center"
+            }`}
+          >
+            {loading ? (
+              <div className="flex flex-col items-center gap-3 text-slate-500">
+                <Loader2 size={24} className="animate-spin text-cyan-500" />
+                <span className="text-xs font-medium">Thinking...</span>
+              </div>
+            ) : response ? (
+              <div className="text-sm text-slate-300 leading-relaxed">
+                {/* --- MARKDOWN RENDERER --- */}
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    // Style Headings
+                    h1: ({ node, ...props }) => (
+                      <h1 className="text-lg font-bold text-white mb-3 mt-4" {...props} />
+                    ),
+                    h2: ({ node, ...props }) => (
+                      <h2 className="text-base font-bold text-cyan-400 mb-2 mt-4" {...props} />
+                    ),
+                    h3: ({ node, ...props }) => (
+                      <h3 className="text-sm font-bold text-cyan-300 mb-2 mt-3" {...props} />
+                    ),
+                    // Style Paragraphs
+                    p: ({ node, ...props }) => (
+                      <p className="mb-3 last:mb-0" {...props} />
+                    ),
+                    // Style Lists
+                    ul: ({ node, ...props }) => (
+                      <ul className="list-disc list-inside mb-3 space-y-1 pl-2 text-slate-300" {...props} />
+                    ),
+                    ol: ({ node, ...props }) => (
+                      <ol className="list-decimal list-inside mb-3 space-y-1 pl-2 text-slate-300" {...props} />
+                    ),
+                    // Style Links
+                    a: ({ node, ...props }) => (
+                      <a className="text-cyan-400 hover:underline cursor-pointer" {...props} />
+                    ),
+                    // Style Code Blocks & Inline Code
+                    code: ({ node, inline, className, children, ...props }) => {
+                      return inline ? (
+                        // Inline code (e.g. `variable`)
+                        <code className="bg-slate-700/50 text-cyan-300 px-1.5 py-0.5 rounded text-xs font-mono border border-slate-600/50" {...props}>
+                          {children}
+                        </code>
+                      ) : (
+                        // Block code (```python ... ```)
+                        <div className="relative group my-3">
+                          <div className="absolute top-0 right-0 px-2 py-1 text-[10px] text-slate-500 font-mono bg-slate-800 rounded-bl-lg rounded-tr-lg border-l border-b border-slate-700">
+                            Code
+                          </div>
+                          <div className="bg-[#0d1117] rounded-lg border border-slate-800 overflow-hidden">
+                            <div className="overflow-x-auto p-3">
+                              <code className="block text-xs font-mono text-emerald-400 whitespace-pre" {...props}>
+                                {children}
+                              </code>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    },
+                  }}
+                >
+                  {response}
+                </ReactMarkdown>
+                {/* ------------------------- */}
+                <div ref={responseEndRef} />
+              </div>
+            ) : (
+              <div className="text-center px-6 py-8">
+                <div className="w-12 h-12 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Sparkles className="w-6 h-6 text-slate-600" />
+                </div>
+                <p className="text-sm text-slate-400 font-medium">
+                  How can I help you today?
+                </p>
+                <p className="text-xs text-slate-600 mt-1">
+                  Ask to fix errors, explain code, or refactor.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* History Section */}
+        {history.length > 0 && (
+          <div className="space-y-3 pt-6 border-t border-slate-800 mt-4">
+            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+              <MessageSquare size={10} /> Recent Chat
+            </h4>
+            <div className="space-y-2">
+              {history.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => setResponse(item.answer)}
+                  className="cursor-pointer group p-3 rounded-xl bg-slate-800/20 hover:bg-slate-800 border border-slate-800/50 hover:border-slate-700 transition-all"
+                >
+                  <p className="text-xs font-semibold text-slate-300 mb-1 line-clamp-1 group-hover:text-cyan-400 transition-colors">
+                    {item.question}
+                  </p>
+                  <p className="text-[10px] text-slate-500 line-clamp-1">
+                    Click to restore answer...
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 3. INPUT AREA (Fixed Bottom - Guaranteed Visible) */}
+      <div className="flex-none p-4 border-t border-slate-800 bg-slate-900 z-10">
+        <div className="relative bg-slate-800 rounded-2xl p-1 border border-slate-700 focus-within:border-cyan-500/50 focus-within:ring-1 focus-within:ring-cyan-500/20 transition-all">
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) =>
+              e.key === "Enter" &&
+              !e.shiftKey &&
+              (e.preventDefault(), askAI(prompt), setPrompt(""))
+            }
             placeholder={placeholder}
-            className="w-full p-2 rounded-lg bg-slate-800 border border-slate-700 focus:ring-1 focus:ring-amber-500 text-sm text-white resize-none min-h-[70px] placeholder-slate-500"
+            className="w-full bg-transparent text-sm text-white p-3 pr-10 max-h-32 min-h-[44px] resize-none outline-none placeholder-slate-600 custom-scrollbar"
+            rows={1}
           />
-          <div className="mt-2 flex items-center gap-2">
-            <button
-              onClick={() => askAI(prompt)}
-              disabled={loading || !prompt}
-              className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                loading || !prompt
-                  ? "bg-slate-700 text-slate-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-teal-400 via-cyan-400 to-emerald-400 text-white shadow-md"
-              }`}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Thinking…
-                </>
-              ) : (
-                <>
-                  <Send className="w-3.5 h-3.5" /> Ask Buddy
-                </>
-              )}
-            </button>
-
-            <button
-              onClick={() => {
-                setPrompt("");
-                setResponse(null);
-              }}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md bg-slate-700 hover:bg-slate-600 text-slate-200"
-            >
-              <Trash2 className="w-3.5 h-3.5" /> Clear
-            </button>
-          </div>
-        </div>
-
-        {/* Response */}
-        {/* <div className="mb-4">
-          <div className="text-xs text-slate-400 mb-2">Response</div>
-          <div className="min-h-[90px] p-3 bg-slate-800/70 rounded-lg border border-slate-700 text-sm text-slate-200 shadow-inner">
-            {response ? (
-              <div className="whitespace-pre-wrap">{response}</div>
+          <button
+            onClick={() => {
+              askAI(prompt);
+              setPrompt("");
+            }}
+            disabled={!prompt.trim() || loading}
+            className="absolute right-2 bottom-2 p-1.5 bg-cyan-500 text-white rounded-lg hover:bg-cyan-400 disabled:opacity-0 disabled:pointer-events-none transition-all shadow-lg shadow-cyan-500/20"
+          >
+            {loading ? (
+              <Loader2 size={14} className="animate-spin" />
             ) : (
-              <div className="text-slate-500 italic">
-                No response yet. Try asking something.
-              </div>
+              <Send size={14} />
             )}
-          </div>
-        </div> */}
-
-      {/* Response */}
-      <div className="mb-4">
-        <div className="text-xs text-slate-400 mb-2">Response</div>
-        
-        {/* --- 💡 FIX IS ON THIS LINE --- */}
-        <div className="min-h-[90px] max-h-64 overflow-y-auto p-3 bg-slate-800/70 rounded-lg border border-slate-700 text-sm text-slate-200 shadow-inner">
-          {response ? (
-            <div className="whitespace-pre-wrap">{response}</div>
-          ) : (
-            <div className="text-slate-500 italic">
-              No response yet. Try asking something.
-            </div>
-          )}
+          </button>
         </div>
-      </div>
-
-
-
-        {/* History */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1 text-xs text-slate-400">
-              <MessageSquare className="w-3 h-3" />
-              <span>History</span>
-            </div>
-            <button
-              onClick={() => setHistory([])}
-              className="text-xs text-slate-400 hover:text-white"
-            >
-              Clear
-            </button>
-          </div>
-
-          <div className="space-y-2 max-h-[200px] overflow-y-auto">
-            {history.length === 0 ? (
-              <div className="text-xs text-slate-500 italic">
-                No previous queries.
-              </div>
-            ) : (
-              history.map((h) => (
-                <div
-                  key={h.id}
-                  className="p-2 bg-slate-800/80 border border-slate-700 rounded-lg text-xs"
-                >
-                  <div className="font-medium text-slate-300">
-                    {h.question}
-                  </div>
-                  <div className="text-slate-400 mt-1 whitespace-pre-wrap">
-                    {h.answer}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="text-[10px] text-slate-500 border-t border-slate-700/50 px-3 py-2">
-        DebugBuddy - A Flexible AI Powered Buddy
       </div>
     </div>
   );
