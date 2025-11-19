@@ -393,7 +393,6 @@ import { initVimMode } from "monaco-vim";
 const getErrorCategory = (err) => {
   if (!err) return "Unknown";
   const text = err.toLowerCase();
-
   if (text.includes("syntax") || text.includes("indentation")) return "Syntax";
   if (text.includes("reference") || text.includes("not defined")) return "Reference";
   if (text.includes("typeerror")) return "Type";
@@ -534,18 +533,15 @@ const CodeEditorPage2 = ({
       onUpdate?.({ output: result });
 
       if (user) {
-        // --- FIX START: Calculate Category ---
         const category = isError ? getErrorCategory(errorOutput) : undefined;
         
         logRunToDatabase({
           isSuccess: !isError,
-          // We send the first line for the summary, but you could send errorOutput for full details
           error: isError ? errorOutput.split("\n")[0].trim() : null, 
-          category: category, // <--- PASSED CATEGORY TO FIX BACKEND REJECTION
+          category: category, 
           language: currentLang,
           code: currentCode,
         });
-        // --- FIX END ---
       }
     }
   };

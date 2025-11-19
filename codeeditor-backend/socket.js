@@ -513,21 +513,6 @@ export const initSocket = (server) => {
       }
     });
 
-    // socket.on("end-room", ({ roomId, userId },callback) => {
-    //   const ownerId = roomOwners.get(roomId);
-    //   if (userId !== ownerId) {
-    //     return;
-    //   }
-    //   if(callback) callback({ status: "ok"});
-    //   console.log(`👑 Owner (${userId}) ended room ${roomId}`);
-    //   io.in(roomId).disconnectSockets(true);
-
-    //   // Clean up all data
-    //   roomParticipants.delete(roomId);
-    //   roomOwners.delete(roomId);
-    //   roomPages.delete(roomId);
-      
-    // });
     socket.on("end-room", ({ roomId, userId }, callback) => {
       const ownerId = roomOwners.get(roomId);
       if (userId !== ownerId) {
