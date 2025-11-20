@@ -6,7 +6,6 @@ import {
   checkUser,
   getCurrentUser,
   logOutUser,
-  runCode,
   askBuddy,
   logRun,
   getRunLogs,
@@ -23,7 +22,6 @@ router.post("/google-login", firebaseLogin);
 router.get("/check-username", checkUser);
 router.route("/logout").post(verifyJWT, logOutUser);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
-router.post("/run", runCode);
 router.post("/ask-buddy",askBuddy);
 router.post("/log-run", verifyJWT, logRun);
 router.get("/get-run-logs", verifyJWT, getRunLogs);

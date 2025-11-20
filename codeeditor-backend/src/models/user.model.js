@@ -15,17 +15,17 @@ const userSchema = new mongoose.Schema(
       required: false,
     },
     password: {
-      type: String, // for guest login
-      minlength: 6, // optional, can adjust
-      maxlength: 100, // optional
+      type: String, 
+      minlength: 6, 
+      maxlength: 100, 
       required: false,
     },
     googleId: {
-      type: String, // for Google login
+      type: String, 
       required: false,
     },
     email: {
-      type: String, // optional for Google login
+      type: String, 
       lowercase: true,
       trim: true,
       minlength: 5,

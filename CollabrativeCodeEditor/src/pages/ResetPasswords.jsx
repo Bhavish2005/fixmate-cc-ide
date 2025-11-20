@@ -1,4 +1,4 @@
-// src/pages/ResetPassword.jsx
+
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Code2, Lock, Eye, EyeOff } from "lucide-react";

@@ -256,9 +256,6 @@ import GoogleAuthButton from "../components/GoogleAuthButton";
 import { toast } from "react-hot-toast";
 import LoginImage from "../assets/Image2.png";
 
-// --- 1. Uncomment this line to use your local image ---
-// import connectCallImage from "../assets/Image.png";
-
 const LoginPage = () => {
   const { setUser, user } = useAuth();
   const [username, setUsername] = useState("");

@@ -1,28 +1,4 @@
-// import {
-//   useCallStateHooks,
-//   ParticipantView,
-// } from "@stream-io/video-react-sdk";
 
-// const VerticalVideoLayout = () => {
-//   const { useParticipants } = useCallStateHooks();
-//   const participants = useParticipants();
-  
-//   // Show only first 2 participants
-//   const displayedParticipants = participants.slice(0, 2);
-
-//   return (
-//     <div className="flex flex-col h-full gap-2 p-2">
-//       {displayedParticipants.map((participant) => (
-//         <div 
-//           key={participant.sessionId}
-//           className="flex-1 bg-gray-800 rounded-lg overflow-hidden"
-//         >
-//           <ParticipantView participant={participant} />
-//         </div>
-//       ))}
-//     </div>
-//   );
-// };
 import React, { useState } from "react";
 import {
   useCallStateHooks,
