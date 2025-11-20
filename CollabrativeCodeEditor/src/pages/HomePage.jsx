@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 
+
 const HomePage = () => {
   const [name, setName] = useState("");
   const [roomId, setRoomId] = useState("");
