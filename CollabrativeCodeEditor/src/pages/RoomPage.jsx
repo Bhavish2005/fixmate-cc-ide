@@ -36,7 +36,7 @@ const RoomPage = () => {
   const userName = searchParams.get("name") || "Guest";
   const userId = getUserId();
 
-  // 🎥 Stream client + call state
+  //  Stream client + call state
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
   const [isJoiningCall, setIsJoiningCall] = useState(false);
@@ -49,7 +49,7 @@ const RoomPage = () => {
     onConfirm: null,
   });
 
-  // ⭐️ NEW: State to track which page is being edited
+  //  NEW: State to track which page is being edited
   const [editingPageId, setEditingPageId] = useState(null);
 
   const confirmAction = (title, message, onConfirm) => {
@@ -70,7 +70,8 @@ const RoomPage = () => {
   // State and Ref for Chat Panel Toggle
   const [isChatOpen, setIsChatOpen] = useState(true);
   const chatPanelRef = useRef(null);
-
+  // new now
+const [unreadCount, setUnreadCount] = useState(0);
 
   const onBackButtonEvent = useCallback((e) => {
     e.preventDefault();
@@ -218,7 +219,7 @@ const RoomPage = () => {
         const existingCall = videoClient.call("default", savedCallId);
         await existingCall.join();
         existingCall.on("call.left", () => {
-          console.log("📞 User left call");
+          console.log(" User left call");
           sessionStorage.removeItem("activeCallId");
           setCall(null);
           setClient(null);
@@ -235,6 +236,25 @@ const RoomPage = () => {
     restoreCall();
   }, [userId, userName]);
 
+  // new now
+  useEffect(() => {
+  if (!socket) return;
+
+  const handleNewMessage = () => {
+    // If chat is CLOSED, increment counter
+    if (!isChatOpen) {
+      setUnreadCount((prev) => prev + 1);
+      toast("New message received", { icon: "💬" }); // Optional: small toast
+    }
+  };
+
+  socket.on("receive-message", handleNewMessage);
+
+  return () => {
+    socket.off("receive-message", handleNewMessage);
+  };
+}, [socket, isChatOpen]);
+// new now end
 
   const handleLeaveCall = () => {
     console.log("Cleaning up after call end");
@@ -358,6 +378,7 @@ const RoomPage = () => {
       panel.collapse();
     } else {
       panel.expand();
+      setUnreadCount(0);
     }
   };
 
@@ -559,13 +580,19 @@ const RoomPage = () => {
         </Panel>
       </PanelGroup>
 
-      {/* Chat Toggle Button at Bottom Right */}
       <button
         onClick={toggleChatPanel}
-        className="fixed bottom-6 right-6 p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg transition-transform transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 z-50"
+       
+        className="absolute bottom-6 right-6 p-3 bg-gradient-to-r from-teal-500 via-cyan-200 to-emerald-200 hover:bg-gradient-to-r from-teal-400 via-cyan-400 to-emerald-400 text-white rounded-full shadow-lg transition-transform transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-75 z-50"
         title={isChatOpen ? "Hide Chat" : "Show Chat"}
       >
         <MessageSquare className="w-6 h-6" />
+
+        {!isChatOpen && unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full ring-2 ring-gray-900 animate-bounce shadow-sm">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
       </button>
       <ConfirmationDialog
         open={confirmation.open}

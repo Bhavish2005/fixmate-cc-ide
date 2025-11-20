@@ -52,6 +52,7 @@ export const initSocket = (server) => {
       if (!roomParticipants.has(roomId)) {
         roomOwners.set(roomId, userId);
         roomParticipants.set(roomId, new Set());
+        socket.emit("get-room-owner", { ownerId: userId });
       } else {
         socket.emit("get-room-owner", { ownerId: roomOwners.get(roomId) });
       }
